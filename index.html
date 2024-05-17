@@ -256,6 +256,10 @@
                 <label for="zone_kaders">Zone kaders:</label>
                 <input id="zone_kaders" class="switch" type="checkbox" checked/>
             </div>
+            <div class="control-box">
+                <label for="zone_nummers">Zone nummers:</label>
+                <input id="zone_nummers" class="switch" type="checkbox" checked/>
+            </div>
         </div>
     </div>
     <br>
@@ -823,6 +827,23 @@
     // Add the second vector layer to the map
     map.addLayer(feeder_layer);
 
+    // Load GeoJSON data for the second layer
+    const zone_nummers_source = new ol.source.Vector({
+        url: 'https://raw.githubusercontent.com/XanderPeeters/ExtendedApplication/main/Zone-nummers.geojson',
+        format: new ol.format.GeoJSON(),
+        crossOrigin: 'anonymous',
+    });
+
+
+    // Create the second vector layer without style
+    const zone_nummers_layer= new ol.layer.Vector({
+        source: zone_nummers_source,
+        zIndex: 1
+    });
+
+    // Add the second vector layer to the map
+    map.addLayer(zone_nummers_layer);
+
     
     // Load GeoJSON data for the second layer
     const zone_kaders_source = new ol.source.Vector({
@@ -944,6 +965,45 @@
             layer.setVisible(this.checked);
         });
     }
+
+    const zone_nummers_styling = function(feature, resolution) {
+    const layerName = feature.get('TEXTSTRING'); // Get the name of the feeder from the 'TEXTSTRING' property
+
+    // Calculate font size based on zoom level
+    const minFontSize = 10; // Adjust the minimum font size as needed
+    const maxFontSize = 14; // Adjust the maximum font size as needed
+    const zoom = map.getView().getZoom();
+    const baseZoom = 10; // Adjust the base zoom level as needed
+    const fontSize = Math.max(minFontSize, maxFontSize - (zoom - baseZoom));
+
+    // Style for the feature
+    return new ol.style.Style({
+        stroke: new ol.style.Stroke({
+            color: 'black', // Assuming a default color if color is not defined elsewhere
+            width: 3
+        }),
+        text: new ol.style.Text({
+            text: map.getView().getZoom() >= 15 ? layerName : '',  // Show the label if zoom is 15 or higher
+            font: `bold ${fontSize}px Calibri,sans-serif`, // Adjust font size dynamically based on zoom level
+            offsetY: -12,
+            fill: new ol.style.Fill({ color: 'black' }),
+            overflow: true, // Allow text to overflow the container if necessary
+            placement: 'point', // Place the text at a point on the feature
+            maxAngle: Math.PI / 6, // Limit the rotation of the text
+            textAlign: 'center', // Center-align the text
+            textBaseline: 'middle', // Align the text vertically at the center
+            stroke: new ol.style.Stroke({ // Stroke style for the text
+                color: '#fff', // White color for the stroke
+                width: 3 // Stroke width
+            })
+        })
+    });
+};
+
+// Set style function for the vector layer
+zone_nummers_layer.setStyle(zone_nummers_styling);
+
+
 
 
         // Create a new select interaction
@@ -1415,6 +1475,8 @@ function zoomToMainFeederExtent(mainFeederFeatures) {
     handleLayerVisibility(greyMapLayer, 'visibleGrey');
 
     handleLayerVisibility(zone_kaders_layer, 'zone_kaders')
+
+    handleLayerVisibility(zone_nummers_layer, 'zone_nummers')
     
 </script>
 </body>
