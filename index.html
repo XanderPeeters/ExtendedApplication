@@ -14,6 +14,54 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.4/xlsx.full.min.js"></script> <!-- Include SheetJS library -->
     <style>
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content div {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content div:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .button-common {
+            background-color: #007bff; /* Blue button color */
+            color: white; /* White text color */
+            padding: 5px; /* Adjust padding */
+            font-size: 12px; /* Adjust font size */
+            height: 40px; /* Set the height */
+            width: 100px; /* Set the width */
+            border: none; /* Remove border */
+            cursor: pointer; /* Add pointer cursor */
+            border-radius: 5px; /* Add border radius */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add shadow */
+            text-align: center; /* Center text */
+            display: inline-block; /* Inline-block display for proper sizing */
+        }
+
+        .button-common:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -177,30 +225,42 @@
             <button id="editorLoginButton" onclick="openEditorLoginPage()">Editor page</button>
         </div>
     </div>
-    <div class="control-box">
-        <label for="visible_map">Kaart:</label>
-        <input id="visible_map" class="visible" type="checkbox" checked/>
+    <div class="dropdown">
+        <button class="button-common">Lagen aan of uit:</button>
+        <div class="dropdown-content">
+            <div class="control-box">
+                <label for="visible_map">Kaart:</label>
+                <input id="visible_map" class="visible" type="checkbox" checked/>
+            </div>
+            <div class="control-box">
+                <label for="visibleGrey">Grijze achtergrond:</label>
+                <input id="visibleGrey" type="checkbox"/>
+            </div>
+            <div class="control-box">
+                <label for="metroSwitch">Metro schakelaars</label>
+                <input id="metroSwitch" class="switch" type="checkbox" checked/>
+            </div>
+            <div class="control-box">
+                <label for="bovengrondsSwitch">Bovengronds schakelaars:</label>
+                <input id="bovengrondsSwitch" class="switch" type="checkbox" checked/>
+            </div>
+            <div class="control-box">
+                <label for="voedingenMetro">Metro Voedingen:</label>
+                <input id="voedingenMetro" class="switch" type="checkbox" checked/>
+            </div>
+            <div class="control-box">
+                <label for="voedingenBovengronds">Bovengronds Voedingen:</label>
+                <input id="voedingenBovengronds" class="switch" type="checkbox" checked/>
+            </div>
+            <div class="control-box">
+                <label for="zone_kaders">Zone kaders:</label>
+                <input id="zone_kaders" class="switch" type="checkbox" checked/>
+            </div>
+        </div>
     </div>
-    <div class="control-box">
-        <label for="visibleGrey">Grijze achtergrond:</label>
-        <input id="visibleGrey" type="checkbox"/>
-    </div>
-    <div class="control-box">
-        <label for="metroSwitch">Metro schakelaars</label>
-        <input id="metroSwitch" class="switch" type="checkbox" checked/>
-    </div>
-    <div class="control-box">
-        <label for="bovengrondsSwitch">Bovengronds schakelaars:</label>
-        <input id="bovengrondsSwitch" class="switch" type="checkbox" checked/>
-    </div>
-    <div class="control-box">
-        <label for="voedingenMetro">Metro Voedingen:</label>
-        <input id="voedingenMetro" class="switch" type="checkbox" checked/>
-    </div>
-    <div class="control-box">
-        <label for="voedingenBovengronds">Bovengronds Voedingen:</label>
-        <input id="voedingenBovengronds" class="switch" type="checkbox" checked/>
-    </div>
+    <br>
+    <br>
+    <br>
     <div class="control-box">
         <label for="searchInput">Zoek op adres, voeding of schakelaar:</label>
         <input id="searchInput" type="text" class="awesomplete" data-list="#addressList" />
@@ -762,6 +822,24 @@
 
     // Add the second vector layer to the map
     map.addLayer(feeder_layer);
+
+    
+    // Load GeoJSON data for the second layer
+    const zone_kaders_source = new ol.source.Vector({
+        url: 'https://raw.githubusercontent.com/XanderPeeters/ExtendedApplication/main/Zone-kaders.geojson',
+        format: new ol.format.GeoJSON(),
+        crossOrigin: 'anonymous',
+    });
+
+
+    // Create the second vector layer without style
+    const zone_kaders_layer = new ol.layer.Vector({
+        source: zone_kaders_source,
+        zIndex: 1
+    });
+
+    // Add the second vector layer to the map
+    map.addLayer(zone_kaders_layer);
 
 
     // Define a mapping of feeder names to image URLs
@@ -1335,6 +1413,8 @@ function zoomToMainFeederExtent(mainFeederFeatures) {
 
     // Handle visibility for greylayer
     handleLayerVisibility(greyMapLayer, 'visibleGrey');
+
+    handleLayerVisibility(zone_kaders_layer, 'zone_kaders')
     
 </script>
 </body>
