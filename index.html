@@ -15,33 +15,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.4/xlsx.full.min.js"></script> <!-- Include SheetJS library -->
     <style>
         .dropdown {
-            position: relative;
-            display: inline-block;
-        }
+    position: relative;
+    display: inline-block;
+}
 
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 200px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-        }
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    max-height: 300px; /* Set a max height */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
 
-        .dropdown-content div {
-            color: black;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
+.dropdown-content div {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
 
-        .dropdown-content div:hover {
-            background-color: #f1f1f1;
-        }
+.dropdown-content div:hover {
+    background-color: #f1f1f1;
+}
 
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
+.dropdown:hover .dropdown-content {
+    display: block;
+}
 
         .button-common {
             background-color: #007bff; /* Blue button color */
@@ -259,6 +261,14 @@
             <div class="control-box">
                 <label for="zone_nummers">Zone nummers:</label>
                 <input id="zone_nummers" class="switch" type="checkbox" checked/>
+            </div>
+            <div class="control-box">
+                <label for="sporen_boven">Sporen boven:</label>
+                <input id="sporen_boven" class="switch" type="checkbox" checked/>
+            </div>
+            <div class="control-box">
+                <label for="sporen_metro">Sporen metro:</label>
+                <input id="sporen_metro" class="switch" type="checkbox" checked/>
             </div>
         </div>
     </div>
@@ -828,6 +838,40 @@
     map.addLayer(feeder_layer);
 
     // Load GeoJSON data for the second layer
+    const sporen_metro_source = new ol.source.Vector({
+        url: 'https://raw.githubusercontent.com/XanderPeeters/ExtendedApplication/main/Sporen-metro.geojson',
+        format: new ol.format.GeoJSON(),
+        crossOrigin: 'anonymous',
+    });
+
+
+    // Create the second vector layer without style
+    const sporen_metro_layer = new ol.layer.Vector({
+        source: sporen_metro_source,
+        zIndex: 1
+    });
+
+    // Add the second vector layer to the map
+    map.addLayer(sporen_metro_layer);
+
+    // Load GeoJSON data for the second layer
+    const sporen_boven_source = new ol.source.Vector({
+        url: 'https://raw.githubusercontent.com/XanderPeeters/ExtendedApplication/main/Sporen-boven.geojson',
+        format: new ol.format.GeoJSON(),
+        crossOrigin: 'anonymous',
+    });
+
+
+    // Create the second vector layer without style
+    const sporen_boven_layer = new ol.layer.Vector({
+        source: sporen_boven_source,
+        zIndex: 1
+    });
+
+    // Add the second vector layer to the map
+    map.addLayer(sporen_boven_layer);
+
+    // Load GeoJSON data for the second layer
     const zone_nummers_source = new ol.source.Vector({
         url: 'https://raw.githubusercontent.com/XanderPeeters/ExtendedApplication/main/Zone-nummers.geojson',
         format: new ol.format.GeoJSON(),
@@ -1002,6 +1046,145 @@
 
 // Set style function for the vector layer
 zone_nummers_layer.setStyle(zone_nummers_styling);
+
+const sporen_boven_styling = function(feature, resolution) {
+    const layerName = feature.get('layer'); // Get the name of the feeder from the 'layer' property
+
+    // Extract color from the layer name, assuming the format is 'S-color'
+    const colorMap = {
+        'rood': 'red',
+        'blauw': 'blue',
+        'oranje': 'orange',
+        'roze': 'pink',
+        'lichtblauw': 'lightblue',
+        'donkerrood': 'darkred',
+        'groen': 'green',
+        'paars': 'purple',
+        'donkergroen': 'darkgreen'
+    };
+    const colorKey = layerName.split('-')[1];
+    const color = colorMap[colorKey] || 'grey'; // Default to grey if color not found
+
+    // Calculate font size based on zoom level
+    const minFontSize = 10; // Adjust the minimum font size as needed
+    const maxFontSize = 14; // Adjust the maximum font size as needed
+    const zoom = map.getView().getZoom();
+    const baseZoom = 10; // Adjust the base zoom level as needed
+    const fontSize = Math.max(minFontSize, maxFontSize - (zoom - baseZoom));
+
+    // Style for the text
+    const textStyle = new ol.style.Text({
+        text: map.getView().getZoom() >= 15 ? layerName : '',  // Show the label if zoom is 15 or higher
+        font: `bold ${fontSize}px Calibri,sans-serif`, // Adjust font size dynamically based on zoom level
+        offsetY: -12,
+        fill: new ol.style.Fill({ color: 'black' }),
+        overflow: true, // Allow text to overflow the container if necessary
+        placement: 'point', // Place the text at a point on the feature
+        maxAngle: Math.PI / 6, // Limit the rotation of the text
+        textAlign: 'center', // Center-align the text
+        textBaseline: 'middle', // Align the text vertically at the center
+        stroke: new ol.style.Stroke({ // Stroke style for the text
+            color: '#fff', // White color for the stroke
+            width: 3 // Stroke width
+        })
+    });
+
+    // Style for the point (blue shiny dot)
+    const pointStyle = new ol.style.Circle({
+        radius: 5, // Adjust the radius as needed
+        fill: new ol.style.Fill({ color: 'blue' }),
+        stroke: new ol.style.Stroke({
+            color: 'lightblue', // Lighter blue for the shiny effect
+            width: 2
+        })
+    });
+
+    // Style for the line
+    const lineStyle = new ol.style.Stroke({
+        color: color, // Use the color extracted from the layer name
+        width: 3
+    });
+
+    // Combine all styles into a single style array
+    return new ol.style.Style({
+        stroke: lineStyle, // Add the line style
+        image: pointStyle, // Add the blue shiny dot
+        text: textStyle // Add the text style
+    });
+};
+
+// Set style function for the vector layer
+sporen_boven_layer.setStyle(sporen_boven_styling);
+
+const sporen_metro_styling = function(feature, resolution) {
+    const layerName = feature.get('layer'); // Get the name of the feeder from the 'layer' property
+
+    // Extract color from the layer name, assuming the format is 'S-color'
+    const colorMap = {
+        'rood': 'red',
+        'blauw': 'blue',
+        'oranje': 'orange',
+        'roze': 'pink',
+        'lichtblauw': 'lightblue',
+        'donkerrood': 'darkred',
+        'groen': 'green',
+        'paars': 'purple',
+        'donkergroen': 'darkgreen'
+    };
+    const colorKey = layerName.split('-')[1];
+    const color = colorMap[colorKey] || 'grey'; // Default to grey if color not found
+
+    // Calculate font size based on zoom level
+    const minFontSize = 10; // Adjust the minimum font size as needed
+    const maxFontSize = 14; // Adjust the maximum font size as needed
+    const zoom = map.getView().getZoom();
+    const baseZoom = 10; // Adjust the base zoom level as needed
+    const fontSize = Math.max(minFontSize, maxFontSize - (zoom - baseZoom));
+
+    // Style for the text
+    const textStyle = new ol.style.Text({
+        text: map.getView().getZoom() >= 15 ? layerName : '',  // Show the label if zoom is 15 or higher
+        font: `bold ${fontSize}px Calibri,sans-serif`, // Adjust font size dynamically based on zoom level
+        offsetY: -12,
+        fill: new ol.style.Fill({ color: 'black' }),
+        overflow: true, // Allow text to overflow the container if necessary
+        placement: 'point', // Place the text at a point on the feature
+        maxAngle: Math.PI / 6, // Limit the rotation of the text
+        textAlign: 'center', // Center-align the text
+        textBaseline: 'middle', // Align the text vertically at the center
+        stroke: new ol.style.Stroke({ // Stroke style for the text
+            color: '#fff', // White color for the stroke
+            width: 3 // Stroke width
+        })
+    });
+
+    // Style for the point (blue shiny dot)
+    const pointStyle = new ol.style.Circle({
+        radius: 5, // Adjust the radius as needed
+        fill: new ol.style.Fill({ color: 'blue' }),
+        stroke: new ol.style.Stroke({
+            color: 'lightblue', // Lighter blue for the shiny effect
+            width: 2
+        })
+    });
+
+    // Style for the line
+    const lineStyle = new ol.style.Stroke({
+        color: color, // Use the color extracted from the layer name
+        width: 3
+    });
+
+    // Combine all styles into a single style array
+    return new ol.style.Style({
+        stroke: lineStyle, // Add the line style
+        image: pointStyle, // Add the blue shiny dot
+        text: textStyle // Add the text style
+    });
+};
+
+// Set style function for the vector layer
+sporen_metro_layer.setStyle(sporen_metro_styling);
+
 
 
 
@@ -1477,6 +1660,10 @@ function zoomToMainFeederExtent(mainFeederFeatures) {
     handleLayerVisibility(zone_kaders_layer, 'zone_kaders')
 
     handleLayerVisibility(zone_nummers_layer, 'zone_nummers')
+
+    handleLayerVisibility(sporen_boven_layer, 'sporen_boven')
+
+    handleLayerVisibility(sporen_metro_layer, 'sporen_metro')
     
 </script>
 </body>
