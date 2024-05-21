@@ -1027,7 +1027,7 @@
             width: 3
         }),
         text: new ol.style.Text({
-            text: map.getView().getZoom() >= 15 ? layerName : '',  // Show the label if zoom is 15 or higher
+            text:map.getView().getZoom() >= 15 ? 'Zone ' + layerName : '',  // Show the label if zoom is 15 or higher
             font: `bold ${fontSize}px Calibri,sans-serif`, // Adjust font size dynamically based on zoom level
             offsetY: -12,
             fill: new ol.style.Fill({ color: 'black' }),
