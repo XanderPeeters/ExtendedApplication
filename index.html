@@ -274,6 +274,10 @@
                 <label for="rem_zone">Rem zones:</label>
                 <input id="rem_zone" class="switch" type="checkbox" checked/>
             </div>
+            <div class="control-box">
+                <label for="metro_bordnummers">Metro bordnummers:</label>
+                <input id="metro_bordnummers" class="switch" type="checkbox" checked/>
+            </div>
         </div>
     </div>
     <br>
@@ -859,6 +863,23 @@
     map.addLayer(rem_zone_layer);
 
     // Load GeoJSON data for the second layer
+    const metro_bordnummers_source = new ol.source.Vector({
+        url: 'https://raw.githubusercontent.com/XanderPeeters/ExtendedApplication/main/GeoJson%20lagen/basis-metro-bordnummers-zone-kleur.geojson',
+        format: new ol.format.GeoJSON(),
+        crossOrigin: 'anonymous',
+    });
+
+
+    // Create the second vector layer without style
+    const metro_bordnummers_layer = new ol.layer.Vector({
+        source: metro_bordnummers_source,
+        zIndex: 1
+    });
+
+    // Add the second vector layer to the map
+    map.addLayer(metro_bordnummers_layer);
+
+    // Load GeoJSON data for the second layer
     const sporen_metro_source = new ol.source.Vector({
         url: 'https://raw.githubusercontent.com/XanderPeeters/ExtendedApplication/main/Sporen-metro.geojson',
         format: new ol.format.GeoJSON(),
@@ -1074,6 +1095,55 @@
     };
     // Set style function for the vector layer
     rem_zone_layer.setStyle(rem_zone_styling);
+
+    const metro_bordnummers_styling = function(feature, resolution) {
+        const nummer = feature.get('NUMMER'); // Get the number from the 'NUMMER' property
+
+        // Calculate font size based on zoom level
+        const minFontSize = 10; // Adjust the minimum font size as needed
+        const maxFontSize = 14; // Adjust the maximum font size as needed
+        const zoom = map.getView().getZoom();
+        const baseZoom = 17; // Adjust the base zoom level as needed
+        const fontSize = Math.max(minFontSize, maxFontSize - (zoom - baseZoom));
+
+        // Determine if the dot and text should be visible
+        const dotVisible = zoom >= 15;
+        const textVisible = zoom >= 18.5;
+
+        // Style for the feature
+        return new ol.style.Style({
+            image: dotVisible ? new ol.style.Circle({
+                radius: 5,
+                fill: new ol.style.Fill({
+                    color: 'lightgreen' // Light green color for the dot
+                }),
+                stroke: new ol.style.Stroke({
+                    color: 'black', // Black stroke for the dot
+                    width: 1
+                })
+            }) : null,
+            text: textVisible ? new ol.style.Text({
+                text: nummer,  // Show the label if zoom is 18.5 or higher
+                font: `bold ${fontSize}px Calibri,sans-serif`, // Adjust font size dynamically based on zoom level
+                offsetY: -12,
+                fill: new ol.style.Fill({ color: 'black' }),
+                overflow: true, // Allow text to overflow the container if necessary
+                placement: 'point', // Place the text at a point on the feature
+                maxAngle: Math.PI / 6, // Limit the rotation of the text
+                textAlign: 'center', // Center-align the text
+                textBaseline: 'middle', // Align the text vertically at the center
+                stroke: new ol.style.Stroke({ // Stroke style for the text
+                    color: '#fff', // White color for the stroke
+                    width: 3 // Stroke width
+                })
+            }) : null
+        });
+    };
+
+    // Set style function for the vector layer
+    metro_bordnummers_layer.setStyle(metro_bordnummers_styling);
+
+
 
     const zone_nummers_styling = function(feature, resolution) {
     const layerName = feature.get('TEXTSTRING'); // Get the name of the feeder from the 'TEXTSTRING' property
