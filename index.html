@@ -223,9 +223,11 @@
         <div id="logoContainer">
            <img src="https://github.com/XanderPeeters/Schakelboekje/blob/master/De_Lijn.svg.png?raw=true" alt="De Lijn logo" width="75" height="auto" onclick="reloadPage()">
         </div>
+        <!--
         <div id="editorLoginContainer">
             <button id="editorLoginButton" onclick="openEditorLoginPage()">Editor page</button>
         </div>
+        -->
     </div>
     <div class="dropdown">
         <button class="button-common">Lagen aan of uit:</button>
@@ -501,7 +503,7 @@
                 }).join('<hr>'); // Separate feature information with horizontal line
                 popupElement.innerHTML = popupContent;
                 // Add the export button separately outside of the mapping function
-                popupElement.innerHTML += '<button id="exportButton" class="export-button">Export schakelnota</button>';
+                // popupElement.innerHTML += '<button id="exportButton" class="export-button">Export schakelnota</button>';
 
             } else {
                 // If no intersecting features, display a message
@@ -540,8 +542,7 @@
                                 <p>Main feeder: ${closestFeatureName}</p>
                                 <p>Edge feeders: ${edgeFeeders}</p>
                                 <p>Switches: ${switches}</p>
-                                ${feedersToTurnOffContent}
-                                <button id="exportButton" class="export-button">Export schakelnota</button>`;
+                                ${feedersToTurnOffContent}`;
                 popupElement.innerHTML = content;
 
             // if we are working in the switches_layer, find the closest feeder and start from there to fill the popup
@@ -578,8 +579,7 @@
                                     <p>Main feeder: ${closestMainFeeder}</p>
                                     <p>Edge feeders: ${edgeFeeders}</p>
                                     <p>Switches: ${switches}</p>
-                                    ${feedersToTurnOffContent}
-                                    <button id="exportButton" class="export-button">Export schakelnota</button>`;
+                                    ${feedersToTurnOffContent} `;
                     popupElement.innerHTML = content;
                 } else {
                     popupElement.innerHTML = '<p>No main feeder found nearby.</p>';
